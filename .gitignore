@@ -12,10 +12,15 @@ backend/venv/
 .rasa/
 backend/.rasa/
 
-# --- Trained models (very large) ---
+# --- Trained models (large) ---
 models/
 backend/models/
 
 # --- Env files / secrets ---
 .env
 *.env
+
+# --- Node (if frontend exists) ---
+node_modules/
+dist/
+build/
