@@ -5,15 +5,38 @@ import ChatInput from './components/ChatInput';
 import LanguageModal from './components/LanguageModal';
 
 const ShramSetuAI = () => {
-  // --- States ---
+  // --- States with LocalStorage recovery ---
   const [lang, setLang] = useState('en');
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const [messages, setMessages] = useState([]);
+  
+  const [messages, setMessages] = useState(() => {
+    const savedMessages = localStorage.getItem('shramsetu_chat_history');
+    return savedMessages ? JSON.parse(savedMessages) : [];
+  });
+
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [currentFlow, setCurrentFlow] = useState(null); 
-  const [userSalary, setUserSalary] = useState(null);
+  
+  const [currentFlow, setCurrentFlow] = useState(() => {
+    return localStorage.getItem('shramsetu_current_flow') || null;
+  });
+
+  const [userSalary, setUserSalary] = useState(() => {
+    const savedSalary = localStorage.getItem('shramsetu_salary');
+    return savedSalary ? JSON.parse(savedSalary) : null;
+  });
+
   const scrollRef = useRef(null);
+
+  // --- Handlers ---
+  const handleReset = () => {
+    if (window.confirm("Kya aap puri chat delete karna chahte hain?")) {
+      localStorage.clear();
+      setMessages([]);
+      setCurrentFlow(null);
+      setUserSalary(null);
+    }
+  };
 
   const languages = [
     { code: 'en', native: 'English', eng: 'ENGLISH' },
@@ -35,6 +58,13 @@ const ShramSetuAI = () => {
 
   const current = content[lang] || content['en'];
 
+  // --- Sync States to LocalStorage ---
+  useEffect(() => {
+    localStorage.setItem('shramsetu_chat_history', JSON.stringify(messages));
+    localStorage.setItem('shramsetu_current_flow', currentFlow || "");
+    localStorage.setItem('shramsetu_salary', JSON.stringify(userSalary));
+  }, [messages, currentFlow, userSalary]);
+
   // --- Auto Scroll ---
   useEffect(() => {
     if (scrollRef.current) {
@@ -47,24 +77,19 @@ const ShramSetuAI = () => {
     return match ? parseInt(match.join('')) : null;
   };
 
-  // --- Main Logic  ---
   const handleSend = async (text) => {
     const userText = text || input;
     if (!userText.trim()) return;
 
-    
     setMessages(prev => [...prev, { id: Date.now(), text: userText, sender: 'user' }]);
     setInput('');
-    setIsTyping(true); // 3: Show "Bot is typing"
+    setIsTyping(true);
 
     try {
-      // Mock API Call
       const API_URL = "https://699fd9dc3188b0b1d536f164.mockapi.io/esic";
       const response = await fetch(API_URL);
-      
       if (!response.ok) throw new Error("API Failure");
 
-      // 4: Bot Message Append with Delay
       setTimeout(() => {
         let botReply = "";
         let nextFlow = currentFlow;
@@ -99,12 +124,11 @@ const ShramSetuAI = () => {
 
         setMessages(prev => [...prev, { id: Date.now() + 1, text: botReply, sender: 'bot' }]);
         setCurrentFlow(nextFlow);
-        setIsTyping(false); // Hide typing
+        setIsTyping(false);
       }, 1000);
 
     } catch (error) {
-      // 5: Error Handling
-      console.error("Error fetching mock data:", error);
+      console.error("Error:", error);
       setTimeout(() => {
         setMessages(prev => [...prev, { id: Date.now() + 2, text: "Something went wrong. Please try again.", sender: 'bot' }]);
         setIsTyping(false);
@@ -125,7 +149,14 @@ const ShramSetuAI = () => {
           />
         )}
 
-        <ChatHeader welcome={current.welcome} sub={current.sub} lang={lang} onLangClick={() => setIsLangOpen(true)} />
+        {/* Header sirf ek baar upar aayega */}
+        <ChatHeader 
+          welcome={current.welcome} 
+          sub={current.sub} 
+          lang={lang} 
+          onLangClick={() => setIsLangOpen(true)} 
+          onReset={handleReset} 
+        />
 
         <main ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-4 bg-white scrollbar-hide">
           <div className="flex justify-center mb-6">
@@ -134,7 +165,6 @@ const ShramSetuAI = () => {
             </div>
           </div>
           
-          {/* Messages History */}
           {messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
               <div className={`max-w-[85%] p-3.5 rounded-2xl text-[14px] ${msg.sender === 'user' ? 'bg-[#0B3C5D] text-white rounded-tr-none' : 'bg-[#F1F5F9] text-gray-800 rounded-tl-none border'}`}>
@@ -143,7 +173,6 @@ const ShramSetuAI = () => {
             </div>
           ))}
 
-          {/* 3: Animated Dots */}
           {isTyping && (
             <div className="flex justify-start animate-in fade-in duration-300">
               <div className="bg-[#F1F5F9] p-4 rounded-2xl rounded-tl-none border border-slate-100 flex gap-1 items-center shadow-sm">
@@ -155,7 +184,6 @@ const ShramSetuAI = () => {
           )}
         </main>
 
-        {/* Quick Actions Actions Bar */}
         <div className="px-5 py-3 bg-white border-t overflow-x-auto no-scrollbar">
           <div className="flex gap-2.5">
             {(currentFlow === "AWAITING_REGISTRATION" || currentFlow === "AWAITING_PWD" ? current.yesNo : current.actions).map((act) => (
@@ -166,12 +194,7 @@ const ShramSetuAI = () => {
           </div>
         </div>
 
-        <ChatInput 
-          input={input} 
-          setInput={setInput} 
-          onSend={() => handleSend(input)} 
-          placeholder={current.placeholder} 
-        />
+        <ChatInput input={input} setInput={setInput} onSend={() => handleSend(input)} placeholder={current.placeholder} />
       </div>
     </div>
   );
