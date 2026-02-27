@@ -1,0 +1,9 @@
+version: "3.1"
+
+stories:
+- story: ESIC eligibility happy path
+  steps:
+  - intent: ask_esic_eligibility
+  - action: utter_ask_salary
+  - intent: inform_salary
+  - action: action_check_esic_eligibility

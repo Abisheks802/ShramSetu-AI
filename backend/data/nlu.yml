@@ -1,0 +1,31 @@
+version: "3.1"
+
+nlu:
+
+- intent: check_esic_eligibility
+  examples: |
+    - Am I eligible for ESIC?
+    - Can you check my ESIC eligibility?
+    - ESIC eligibility check
+    - I want to check ESIC eligibility
+
+- intent: provide_salary
+  examples: |
+    - my salary is [18000](salary)
+    - [20000](salary)
+    - salary [15000](salary)
+    - I earn [21000](salary)
+
+- intent: affirm
+  examples: |
+    - yes
+    - Yes
+    - yeah
+    - correct
+
+- intent: deny
+  examples: |
+    - no
+    - No
+    - not registered
+    - nope

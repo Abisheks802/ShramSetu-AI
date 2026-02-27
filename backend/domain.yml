@@ -1,0 +1,54 @@
+version: "3.1"
+
+intents:
+  - check_esic_eligibility
+  - provide_salary
+  - affirm
+  - deny
+
+entities:
+  - salary
+
+slots:
+  salary:
+    type: float
+    mappings:
+      - type: from_entity
+        entity: salary
+
+  employer_registered:
+    type: bool
+    mappings:
+      - type: from_intent
+        intent: affirm
+        value: true
+        conditions:
+          - active_loop: esic_form
+            requested_slot: employer_registered
+      - type: from_intent
+        intent: deny
+        value: false
+        conditions:
+          - active_loop: esic_form
+            requested_slot: employer_registered
+
+responses:
+  utter_ask_salary:
+    - text: "What is your monthly salary?"
+
+  utter_ask_employer_registered:
+    - text: "Is your employer registered under ESIC? (Yes/No)"
+
+  utter_checking:
+    - text: "Checking your eligibility..."
+
+forms:
+  esic_form:
+    required_slots:
+      - salary
+      - employer_registered
+
+actions:
+  - action_reset_esic_slots
+  - action_check_esic_eligibility
+
