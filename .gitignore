@@ -1,6 +1,21 @@
-backend/venv/
-backend/models/
-backend/__pycache__/
-backend/.rasa/
+# --- Python / Rasa junk ---
+__pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# --- Virtual env ---
+venv/
+backend/venv/
+
+# --- Rasa generated folders ---
+.rasa/
+backend/.rasa/
+
+# --- Trained models (very large) ---
+models/
+backend/models/
+
+# --- Env files / secrets ---
 .env
+*.env
