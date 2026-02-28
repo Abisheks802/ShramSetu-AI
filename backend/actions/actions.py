@@ -79,5 +79,15 @@ class ActionCheckESICEligibility(Action):
         # ----------------------------
         # Eligible Case
         # ----------------------------
-        dispatcher.utter_message(text="You are eligible for ESIC.")
+        dispatcher.utter_message(
+            text=
+                "Yes, you are eligible for ESIC.\n\n"
+                "Here are the benefits you can receive:\n"
+                "• Medical treatment for you and your family\n"
+                "• Sickness benefit (cash compensation)\n"
+                "• Maternity benefit\n"
+                "• Disability benefit\n"
+                "• Dependent benefit in case of death\n"
+                "• Funeral expenses coverage\n"
+        )
         return []
