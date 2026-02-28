@@ -5,23 +5,29 @@ import ChatInput from './components/ChatInput';
 import LanguageModal from './components/LanguageModal';
 
 const ShramSetuAI = () => {
-  const [lang, setLang] = useState('en');
-  const [isLangOpen, setIsLangOpen] = useState(false);
-  const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  // --- STATE MANAGEMENT ---
+  const [lang, setLang] = useState('en'); 
+  const [isLangOpen, setIsLangOpen] = useState(false); 
+  const [input, setInput] = useState(''); 
+  const [isTyping, setIsTyping] = useState(false); 
   
+  // Persistent Chat History: Loads messages from LocalStorage on initial render
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem('shramsetu_chat_history');
     return saved ? JSON.parse(saved) : [];
   });
 
-  const scrollRef = useRef(null);
+  const scrollRef = useRef(null); // Reference for the chat container to handle auto-scrolling
 
+  // --- SIDE EFFECTS ---
   useEffect(() => {
+    // Save messages to LocalStorage whenever history changes
     localStorage.setItem('shramsetu_chat_history', JSON.stringify(messages));
+    // Auto-scroll to the latest message
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
+  // --- CONFIGURATION DATA ---
   const languages = [
     { code: 'en', native: 'English', eng: 'ENGLISH' },
     { code: 'hi', native: 'हिन्दी', eng: 'HINDI' },
@@ -30,6 +36,7 @@ const ShramSetuAI = () => {
     { code: 'mr', native: 'मराठी', eng: 'MARATHI' }
   ];
 
+  // UI Text translations based on language selection
   const content = {
     en: { welcome: "ShramSetu AI", sub: "RASA POWERED", placeholder: "Type here...", actions: ["Am I eligible for ESIC?", "Check PF Status"] },
     hi: { welcome: "श्रमसेतु AI", sub: "RASA द्वारा संचालित", placeholder: "यहाँ लिखें...", actions: ["क्या मैं ESIC के पात्र हूँ?", "PF स्टेटस"] }
@@ -37,14 +44,15 @@ const ShramSetuAI = () => {
 
   const current = content[lang] || content['en'];
 
+  // --- MESSAGE HANDLING ---
   const handleSend = async (text) => {
     const userText = text || input;
     if (!userText.trim()) return;
 
-    // --- SMART FRONTEND VALIDATION ---
+    // --- INPUT VALIDATION LOGIC ---
     const lowerText = userText.toLowerCase().trim();
     
-    // Check if it's a known button/intent or Yes/No (Allowed Alphabets)
+    // Check if the input matches specific keywords or patterns
     const isAllowedText = 
       lowerText === "yes" || 
       lowerText === "no" || 
@@ -52,27 +60,28 @@ const ShramSetuAI = () => {
       userText.includes("Status") || 
       userText.startsWith("/");
 
-    // If it's NOT a button/intent and contains alphabets (Salary Input Case)
+    // Restrict input to digits only if it's not a predefined keyword
     if (!isAllowedText && !/^\d+$/.test(userText.trim())) {
       setMessages(prev => [...prev, 
         { id: Date.now(), text: userText, sender: 'user' },
         { id: Date.now() + 1, text: "Please enter digits only ", sender: 'bot' }
       ]);
       setInput('');
-      return; // Stop API call
+      return; 
     }
-    // --- VALIDATION END ---
 
+    // Update UI with User Message
     setMessages(prev => [...prev, { id: Date.now(), text: userText, sender: 'user' }]);
     setInput('');
     setIsTyping(true);
 
     try {
+      // API call to Rasa Backend
       const response = await fetch("http://localhost:5005/webhooks/rest/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sender: "user_session_123",
+          sender: "user_session_123", // Unique session ID for Rasa tracker
           message: userText
         }),
       });
@@ -80,16 +89,17 @@ const ShramSetuAI = () => {
       const data = await response.json();
 
       if (data && data.length > 0) {
+        // Sequential message rendering for a natural chat feel
         data.forEach((res, index) => {
           setTimeout(() => {
             setMessages(prev => [...prev, { 
               id: Date.now() + index, 
               text: res.text || "I didn't quite get that.", 
               sender: 'bot',
-              buttons: res.buttons // Store buttons if any
+              buttons: res.buttons // Handles interactive buttons sent by Rasa
             }]);
             if (index === data.length - 1) setIsTyping(false);
-          }, index * 600); 
+          }, index * 600);
         });
       } else {
         setIsTyping(false);
@@ -109,10 +119,13 @@ const ShramSetuAI = () => {
     <div className="fixed inset-0 bg-slate-200 sm:bg-[#D1D5DB] flex items-center justify-center font-sans antialiased">
       <div className="w-full h-full sm:w-[420px] sm:h-[90vh] sm:max-h-[850px] bg-white flex flex-col shadow-2xl relative sm:rounded-[32px] overflow-hidden border-x border-gray-100">
         
+        {/* MODAL: Language selection overlay */}
         {isLangOpen && <LanguageModal languages={languages} currentLang={lang} onSelect={(c) => {setLang(c); setIsLangOpen(false)}} onClose={() => setIsLangOpen(false)} />}
 
+        {/* HEADER: Dynamic app name and language switcher */}
         <ChatHeader welcome={current.welcome} sub={current.sub} lang={lang} onLangClick={() => setIsLangOpen(true)} />
 
+        {/* CHAT AREA: Message bubble container */}
         <main ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-white scrollbar-hide">
           <div className="flex justify-center mb-4">
             <div className="bg-slate-50 text-slate-400 px-3 py-1 rounded-full text-[10px] flex items-center gap-2 font-bold border border-slate-100 uppercase tracking-widest shadow-sm">
@@ -120,13 +133,14 @@ const ShramSetuAI = () => {
             </div>
           </div>
           
+          {/* Loop through message history */}
           {messages.map((msg) => (
             <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} animate-in slide-in-from-bottom-1 duration-300`}>
               <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-[14px] leading-relaxed shadow-sm ${msg.sender === 'user' ? 'bg-[#0B3C5D] text-white rounded-tr-none' : 'bg-[#F1F5F9] text-gray-800 rounded-tl-none border border-slate-50'}`}>
                 {msg.text}
               </div>
 
-              {/* RENDER INTERACTIVE BUTTONS */}
+              {/* INTERACTIVE BUTTONS: Renders if Rasa sends button payloads */}
               {msg.sender === 'bot' && msg.buttons && (
                 <div className="flex gap-2 mt-2 flex-wrap">
                   {msg.buttons.map((btn, i) => (
@@ -143,6 +157,7 @@ const ShramSetuAI = () => {
             </div>
           ))}
 
+          {/* TYPING INDICATOR: Visible while waiting for API response */}
           {isTyping && (
             <div className="flex justify-start">
               <div className="bg-[#F1F5F9] px-4 py-2.5 rounded-2xl rounded-tl-none border border-slate-50 flex gap-1 items-center">
@@ -154,6 +169,7 @@ const ShramSetuAI = () => {
           )}
         </main>
 
+        {/* QUICK ACTIONS: Horizontal scrolling suggestions */}
         <div className="px-4 py-3 bg-white border-t border-slate-50 overflow-x-auto no-scrollbar">
           <div className="flex gap-2 py-1">
             {current.actions.map((act) => (
@@ -168,6 +184,7 @@ const ShramSetuAI = () => {
           </div>
         </div>
 
+        {/* INPUT FOOTER: Final text entry component */}
         <ChatInput input={input} setInput={setInput} onSend={() => handleSend(input)} placeholder={current.placeholder} />
       </div>
     </div>
