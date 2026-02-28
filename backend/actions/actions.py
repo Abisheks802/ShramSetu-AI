@@ -56,7 +56,7 @@ class ActionCheckESICEligibility(Action):
 
         salary = float(salary)
 
-        dispatcher.utter_message(text="Checking your eligibility...")
+        
 
         # ----------------------------
         # RULE 1: Wage Rule
