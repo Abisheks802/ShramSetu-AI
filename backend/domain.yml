@@ -1,12 +1,15 @@
 version: "3.1"
 
 intents:
-  - check_esic_eligibility
-  - calculate_pf
   - calculate_gratuity
+  - provide_basic_salary
+  - provide_years_of_service
+  - calculate_pf
   - provide_salary
+  - check_esic
   - affirm
   - deny
+  - thank_you
 
 entities:
   - salary
