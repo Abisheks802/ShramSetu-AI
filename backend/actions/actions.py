@@ -153,3 +153,56 @@ class ActionResetPFSlot(Action):
     ) -> List[Dict[Text, Any]]:
 
         return [SlotSet("basic_salary", None)]
+
+
+
+
+class ActionResetGratuitySlots(Action):
+    def name(self):
+        return "action_reset_gratuity_slots"
+
+    def run(self, dispatcher, tracker, domain):
+        return [
+            SlotSet("last_drawn_salary", None),
+            SlotSet("years_of_service", None)
+        ]
+    
+
+
+class ActionCalculateGratuity(Action):
+
+    def name(self):
+        return "action_calculate_gratuity"
+
+    def run(self, dispatcher, tracker, domain):
+
+        salary = tracker.get_slot("last_drawn_salary")
+        years = tracker.get_slot("years_of_service")
+
+        # Convert to float safely
+        try:
+            salary = float(salary)
+            years = float(years)
+        except:
+            dispatcher.utter_message(text="Invalid input. Please enter numbers only.")
+            return []
+
+        # Check minimum 5 years
+        if years < 5:
+            dispatcher.utter_message(
+                text="You are not eligible for gratuity. Minimum 5 years of service required."
+            )
+            return []
+
+        #  Gratuity formula
+        gratuity = (salary * 15 * years) / 26
+
+        # Apply 20 lakh cap
+        if gratuity > 2000000:
+            gratuity = 2000000
+
+        dispatcher.utter_message(
+            text=f"Your gratuity amount is ₹{gratuity:,.2f}"
+        )
+
+        return []

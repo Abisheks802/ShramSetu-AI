@@ -38,3 +38,23 @@ rules:
   - action: pf_form
   - active_loop: null
   - action: action_calculate_pf
+
+
+# =========================
+# GRATUITY RULES
+# =========================
+
+- rule: Start Gratuity form
+  steps:
+  - intent: calculate_gratuity
+  - action: action_reset_gratuity_slots
+  - action: gratuity_form
+  - active_loop: gratuity_form
+
+- rule: Submit Gratuity form
+  condition:
+  - active_loop: gratuity_form
+  steps:
+  - action: gratuity_form
+  - active_loop: null
+  - action: action_calculate_gratuity

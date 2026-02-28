@@ -65,3 +65,11 @@ nlu:
     - 8900
     - 15000
     - 22000
+
+
+- intent: calculate_gratuity
+  examples: |
+    - I want to calculate gratuity
+    - Calculate my gratuity
+    - Check gratuity amount
+    - Gratuity calculation
