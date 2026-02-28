@@ -14,21 +14,13 @@ const ShramSetuAI = () => {
     const saved = localStorage.getItem('shramsetu_chat_history');
     return saved ? JSON.parse(saved) : [];
   });
-  
-  const [currentFlow, setCurrentFlow] = useState(() => localStorage.getItem('shramsetu_current_flow') || null);
-  const [userSalary, setUserSalary] = useState(() => {
-    const saved = localStorage.getItem('shramsetu_salary');
-    return saved ? JSON.parse(saved) : null;
-  });
 
   const scrollRef = useRef(null);
 
   useEffect(() => {
     localStorage.setItem('shramsetu_chat_history', JSON.stringify(messages));
-    localStorage.setItem('shramsetu_current_flow', currentFlow || "");
-    localStorage.setItem('shramsetu_salary', JSON.stringify(userSalary));
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages, currentFlow, userSalary]);
+  }, [messages]);
 
   const languages = [
     { code: 'en', native: 'English', eng: 'ENGLISH' },
@@ -39,112 +31,77 @@ const ShramSetuAI = () => {
   ];
 
   const content = {
-    en: { 
-        welcome: "ShramSetu AI", sub: "LABOR ASSISTANT", placeholder: "Type here...", 
-        actions: ["Am I eligible for ESIC?", "Check PF Status"], 
-        askReg: "Is your employer registered under ESIC?", 
-        askSalary: "Monthly Salary (₹)?", 
-        askPwD: "Are you PwD (Disabled)?", 
-        yesNo: ["Yes", "No"],
-        errDigits: "Please provide your monthly salary in digits (e.g., 15000).",
-        errYesNo: "Please reply with 'Yes' or 'No'."
-    },
-    hi: { 
-        welcome: "श्रमसेtu AI", sub: "श्रम सहायक", placeholder: "यहाँ लिखें...", 
-        actions: ["क्या मैं ESIC के पात्र हूँ?", "PF स्टेटस"], 
-        askReg: "क्या आपका एम्प्लॉयर रजिस्टर्ड है?", 
-        askSalary: "मासिक सैलरी (₹)?", 
-        askPwD: "क्या आप दिव्यांग हैं?", 
-        yesNo: ["हाँ", "नहीं"],
-        errDigits: "कृपया अपनी मासिक सैलरी अंकों (digits) में बताएं (जैसे: 15000)।",
-        errYesNo: "कृपया 'हाँ' या 'नहीं' में जवाब दें।"
-    }
+    en: { welcome: "ShramSetu AI", sub: "RASA POWERED", placeholder: "Type here...", actions: ["Am I eligible for ESIC?", "Check PF Status"] },
+    hi: { welcome: "श्रमसेतु AI", sub: "RASA द्वारा संचालित", placeholder: "यहाँ लिखें...", actions: ["क्या मैं ESIC के पात्र हूँ?", "PF स्टेटस"] }
   };
 
   const current = content[lang] || content['en'];
 
-  const extractSalary = (text) => {
-    const match = text.match(/\d+/g);
-    return match ? parseInt(match.join('')) : null;
-  };
-
   const handleSend = async (text) => {
     const userText = text || input;
     if (!userText.trim()) return;
+
+    // --- SMART FRONTEND VALIDATION ---
+    const lowerText = userText.toLowerCase().trim();
+    
+    // Check if it's a known button/intent or Yes/No (Allowed Alphabets)
+    const isAllowedText = 
+      lowerText === "yes" || 
+      lowerText === "no" || 
+      userText.includes("eligible") || 
+      userText.includes("Status") || 
+      userText.startsWith("/");
+
+    // If it's NOT a button/intent and contains alphabets (Salary Input Case)
+    if (!isAllowedText && !/^\d+$/.test(userText.trim())) {
+      setMessages(prev => [...prev, 
+        { id: Date.now(), text: userText, sender: 'user' },
+        { id: Date.now() + 1, text: "Please enter digits only ", sender: 'bot' }
+      ]);
+      setInput('');
+      return; // Stop API call
+    }
+    // --- VALIDATION END ---
 
     setMessages(prev => [...prev, { id: Date.now(), text: userText, sender: 'user' }]);
     setInput('');
     setIsTyping(true);
 
     try {
-      const API_URL = "https://699fd9dc3188b0b1d536f164.mockapi.io/esic";
-      await fetch(API_URL); 
+      const response = await fetch("http://localhost:5005/webhooks/rest/webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sender: "user_session_123",
+          message: userText
+        }),
+      });
 
-      setTimeout(() => {
-        let botReply = "";
-        let nextFlow = currentFlow;
-        const foundSalary = extractSalary(userText);
+      const data = await response.json();
 
-        const isYes = (t) => t.toLowerCase().includes("yes") || t.includes("हाँ") || t.includes("हो");
-        const isNo = (t) => t.toLowerCase().includes("no") || t.includes("नहीं");
-       
-        const isAskingEligibility = userText.toLowerCase().includes("eligible") || userText.includes("पात्र") || userText.toLowerCase().includes("esic");
-
-  
-        if (isAskingEligibility && currentFlow !== "AWAITING_REGISTRATION") {
-          botReply = current.askReg;
-          nextFlow = "AWAITING_REGISTRATION";
-        } 
-        // Registration Logic
-        else if (currentFlow === "AWAITING_REGISTRATION") {
-          if (isYes(userText)) {
-            botReply = current.askSalary;
-            nextFlow = "AWAITING_SALARY";
-          } else if (isNo(userText)) {
-            botReply = lang === 'hi' ? "क्षमा करें, ESIC के लिए एम्प्लॉयर का रजिस्टर्ड होना अनिवार्य है।" : "Sorry, employer registration is mandatory for ESIC.";
-            nextFlow = null;
-          } else {
-            botReply = current.errYesNo;
-          }
-        } 
-        // Salary Validation
-        else if (currentFlow === "AWAITING_SALARY") {
-          if (foundSalary !== null && foundSalary > 0) {
-            setUserSalary(foundSalary);
-            botReply = current.askPwD;
-            nextFlow = "AWAITING_PWD";
-          } else {
-            botReply = current.errDigits;
-            nextFlow = "AWAITING_SALARY";
-          }
-        } 
-        // PwD Logic
-        else if (currentFlow === "AWAITING_PWD") {
-          if (isYes(userText) || isNo(userText)) {
-            const limit = isYes(userText) ? 25000 : 21000;
-            if (userSalary <= limit) {
-              botReply = lang === 'hi' ? `आप पात्र हैं! (Limit: ₹${limit})` : ` You are eligible! (Limit: ₹${limit})`;
-            } else {
-              botReply = lang === 'hi' ? `आप पात्र नहीं हैं। सैलरी ₹${limit} से अधिक है।` : `Not eligible. Salary exceeds ₹${limit}.`;
-            }
-            nextFlow = null;
-          } else {
-            botReply = current.errYesNo;
-          }
-        } 
-        else {
-          botReply = lang === 'hi' ? "मैं आपकी और क्या सहायता कर सकता हूँ?" : "How else can I help you today?";
-          nextFlow = null;
-        }
-
-        setMessages(prev => [...prev, { id: Date.now() + 1, text: botReply, sender: 'bot' }]);
-        setCurrentFlow(nextFlow);
+      if (data && data.length > 0) {
+        data.forEach((res, index) => {
+          setTimeout(() => {
+            setMessages(prev => [...prev, { 
+              id: Date.now() + index, 
+              text: res.text || "I didn't quite get that.", 
+              sender: 'bot',
+              buttons: res.buttons // Store buttons if any
+            }]);
+            if (index === data.length - 1) setIsTyping(false);
+          }, index * 600); 
+        });
+      } else {
         setIsTyping(false);
-      }, 1000);
-
+      }
     } catch (error) {
-      setMessages(prev => [...prev, { id: Date.now() + 2, text: "Connection error.", sender: 'bot' }]);
+      console.error("Rasa Error:", error);
       setIsTyping(false);
+      setMessages(prev => [...prev, { 
+        id: Date.now() + 999, 
+        text: "Error: Cannot connect to Rasa.", 
+        sender: 'bot' 
+      }]);
     }
   };
 
@@ -159,15 +116,30 @@ const ShramSetuAI = () => {
         <main ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-white scrollbar-hide">
           <div className="flex justify-center mb-4">
             <div className="bg-slate-50 text-slate-400 px-3 py-1 rounded-full text-[10px] flex items-center gap-2 font-bold border border-slate-100 uppercase tracking-widest shadow-sm">
-               <Shield size={12} className="text-orange-500" /> Secure Encryption
+               <Shield size={12} className="text-orange-500" /> Backend: Rasa Core
             </div>
           </div>
           
           {messages.map((msg) => (
-            <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-1 duration-300`}>
+            <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} animate-in slide-in-from-bottom-1 duration-300`}>
               <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-[14px] leading-relaxed shadow-sm ${msg.sender === 'user' ? 'bg-[#0B3C5D] text-white rounded-tr-none' : 'bg-[#F1F5F9] text-gray-800 rounded-tl-none border border-slate-50'}`}>
                 {msg.text}
               </div>
+
+              {/* RENDER INTERACTIVE BUTTONS */}
+              {msg.sender === 'bot' && msg.buttons && (
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {msg.buttons.map((btn, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSend(btn.payload)} 
+                      className="bg-white border border-[#0B3C5D] text-[#0B3C5D] px-4 py-1.5 rounded-full text-[12px] font-bold hover:bg-[#0B3C5D] hover:text-white transition-all shadow-sm active:scale-95"
+                    >
+                      {btn.title}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
 
@@ -184,7 +156,7 @@ const ShramSetuAI = () => {
 
         <div className="px-4 py-3 bg-white border-t border-slate-50 overflow-x-auto no-scrollbar">
           <div className="flex gap-2 py-1">
-            {(currentFlow === "AWAITING_REGISTRATION" || currentFlow === "AWAITING_PWD" ? current.yesNo : current.actions).map((act) => (
+            {current.actions.map((act) => (
               <button 
                 key={act} 
                 onClick={() => handleSend(act)} 
