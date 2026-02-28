@@ -17,3 +17,24 @@ rules:
   - active_loop: null
   - action: utter_checking
   - action: action_check_esic_eligibility
+
+
+ 
+# =========================
+# PF RULES
+# =========================
+
+- rule: Start PF form
+  steps:
+  - intent: calculate_pf
+  - action: action_reset_pf_slot
+  - action: pf_form
+  - active_loop: pf_form
+
+- rule: Submit PF form
+  condition:
+  - active_loop: pf_form
+  steps:
+  - action: pf_form
+  - active_loop: null
+  - action: action_calculate_pf

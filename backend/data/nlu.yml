@@ -2,12 +2,18 @@ version: "3.1"
 
 nlu:
 
+# =========================
+# ESIC
+# =========================
+
 - intent: check_esic_eligibility
   examples: |
     - Am I eligible for ESIC?
     - Can you check my ESIC eligibility?
     - ESIC eligibility check
     - I want to check ESIC eligibility
+    - check ESIC
+    - ESIC status
 
 - intent: provide_salary
   examples: |
@@ -15,6 +21,8 @@ nlu:
     - [20000](salary)
     - salary [15000](salary)
     - I earn [21000](salary)
+    - it is [17000](salary)
+    - [12000](salary)
 
 - intent: affirm
   examples: |
@@ -22,6 +30,8 @@ nlu:
     - Yes
     - yeah
     - correct
+    - registered
+    - it is registered
 
 - intent: deny
   examples: |
@@ -29,3 +39,29 @@ nlu:
     - No
     - not registered
     - nope
+    - it is not registered
+
+
+# =========================
+# PF
+# =========================
+
+- intent: calculate_pf
+  examples: |
+    - calculate my PF
+    - PF calculation
+    - I want to calculate PF
+    - calculate provident fund
+    - PF check
+    - how much PF will I get
+
+- intent: provide_basic_salary
+  examples: |
+    - my basic salary is [15000](salary)
+    - [10000](salary)
+    - basic salary [22000](salary)
+    - it is [18000](salary)
+    - [8900](salary)
+    - 8900
+    - 15000
+    - 22000

@@ -2,6 +2,7 @@ version: "3.1"
 
 intents:
   - check_esic_eligibility
+  - calculate_pf
   - provide_salary
   - affirm
   - deny
@@ -15,6 +16,10 @@ slots:
     mappings:
       - type: from_entity
         entity: salary
+      - type: from_text
+        conditions:
+          - active_loop: esic_form
+            requested_slot: salary
 
   employer_registered:
     type: bool
@@ -32,6 +37,14 @@ slots:
           - active_loop: esic_form
             requested_slot: employer_registered
 
+  basic_salary:
+    type: float
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: pf_form
+            requested_slot: basic_salary
+
 responses:
   utter_ask_salary:
     - text: "What is your monthly salary?"
@@ -41,14 +54,23 @@ responses:
 
   utter_checking:
     - text: "Checking your eligibility..."
+  
+  utter_ask_basic_salary:
+     - text: "Please enter your basic salary to calculate PF."
 
 forms:
   esic_form:
     required_slots:
       - salary
       - employer_registered
+  
+  pf_form:
+    required_slots:
+      - basic_salary
 
 actions:
   - action_reset_esic_slots
   - action_check_esic_eligibility
+  - action_calculate_pf
+  - action_reset_pf_slot
 
