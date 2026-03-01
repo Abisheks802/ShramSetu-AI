@@ -18,6 +18,7 @@ rules:
   - action: utter_checking
   - action: action_check_esic_eligibility
 
+<<<<<<< HEAD
 
  
 # =========================
@@ -58,3 +59,11 @@ rules:
   - action: gratuity_form
   - active_loop: null
   - action: action_calculate_gratuity
+=======
+- rule: Start ESIC form when user provides salary directly
+  steps:
+  - intent: provide_salary
+  - action: action_reset_esic_slots
+  - action: esic_form
+  - active_loop: esic_form
+>>>>>>> 9384b5a (Updated rules.yml for ESIC eligibility)
