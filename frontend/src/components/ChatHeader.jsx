@@ -9,7 +9,7 @@ const ChatHeader = ({ welcome, sub, lang, onLangClick }) => (
       </div>
       <div className="text-left">
         <h1 className="font-bold text-[14px] sm:text-[15px] tracking-tight leading-none">{welcome}</h1>
-        {/* <p className="text-[8px] sm:text-[9px] text-green-300 font-black uppercase tracking-[0.1em] mt-1 opacity-80">{sub}</p> */}
+        <p className="text-[8px] sm:text-[9px] text-green-300 font-black uppercase tracking-[0.1em] mt-1 opacity-80">{sub}</p>
       </div>
     </div>
     
