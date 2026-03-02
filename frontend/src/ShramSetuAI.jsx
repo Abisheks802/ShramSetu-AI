@@ -1,21 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
-import ChatHeader from './components/ChatHeader';
-import ChatInput from './components/ChatInput';
-import LanguageModal from './components/LanguageModal';
+import React, { useState, useRef, useEffect } from "react";
+import ChatHeader from "./components/ChatHeader";
+import ChatInput from "./components/ChatInput";
+import LanguageModal from "./components/LanguageModal";
 
 const ShramSetuAI = () => {
-  const [lang, setLang] = useState('en');
+  const [lang, setLang] = useState("en");
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [isListening, setIsListening] = useState(false); // Voice state
+  const [isListening, setIsListening] = useState(false);
 
   const scrollRef = useRef(null);
 
-  // --- VOICE INTEGRATION LOGIC START ---
+  // --- VOICE INTEGRATION LOGIC ---
   const handleVoiceInput = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       alert("Browser not supported. Please use Chrome.");
@@ -23,15 +24,15 @@ const ShramSetuAI = () => {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.lang = lang === 'hi' ? 'hi-IN' : 'en-US'; 
+    recognition.lang = lang === "hi" ? "hi-IN" : "en-US";
     recognition.interimResults = false;
 
     recognition.onstart = () => setIsListening(true);
-    
+
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       setInput(transcript);
-      handleSend(transcript); 
+      handleSend(transcript);
       setIsListening(false);
     };
 
@@ -40,40 +41,52 @@ const ShramSetuAI = () => {
 
     recognition.start();
   };
-  // --- VOICE INTEGRATION LOGIC END ---
 
+  // Auto-scroll to bottom
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages]);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages, isTyping]);
 
   const languages = [
-    { code: 'en', native: 'English', eng: 'ENGLISH' },
-    { code: 'hi', native: 'हिन्दी', eng: 'HINDI' }
+    { code: "en", native: "English", eng: "ENGLISH" },
+    { code: "hi", native: "हिन्दी", eng: "HINDI" },
   ];
 
   const content = {
-    en: { 
-      welcome: "ShramSetu AI", 
-      sub: "AI POWERED",  
-      placeholder: "Type here...", 
-      actions: ["Am I eligible for ESIC?", "Check PF Contribution", "Calculate Gratuity"] 
+    en: {
+      welcome: "ShramSetu AI",
+      sub: "AI POWERED",
+      placeholder: "Type here...",
+      actions: [
+        "Am I eligible for ESIC?",
+        "Check PF Contribution",
+        "Calculate Gratuity",
+      ],
     },
-    hi: { 
-      welcome: "श्रमसेतु AI", 
-      sub: "AI द्वारा संचालित", 
-      placeholder: "यहाँ लिखें...", 
-      actions: ["ESIC पात्रता जांचें", "PF गणना करें", "ग्रेच्युटी जानें"] 
-    }
+    hi: {
+      welcome: "श्रमसेतु AI",
+      sub: "AI द्वारा संचालित",
+      placeholder: "यहाँ लिखें...",
+      actions: ["ESIC पात्रता जांचें", "PF गणना करें", "ग्रेच्युटी जानें"],
+    },
   };
 
-  const current = content[lang] || content['en'];
+  const current = content[lang] || content["en"];
 
   const handleSend = async (text) => {
     const userText = text || input;
     if (!userText.trim()) return;
 
-    setMessages(prev => [...prev, { id: Date.now(), text: userText, sender: 'user' }]);
-    setInput('');
+    setMessages((prev) => [
+      ...prev,
+      { id: Date.now(), text: userText, sender: "user" },
+    ]);
+    setInput("");
     setIsTyping(true);
 
     try {
@@ -88,57 +101,99 @@ const ShramSetuAI = () => {
       if (data && data.length > 0) {
         data.forEach((res, index) => {
           setTimeout(() => {
-            setMessages(prev => [...prev, { 
-              id: Date.now() + index, 
-              text: res.text || "I didn't quite get that.", 
-              sender: 'bot',
-              buttons: res.buttons 
-            }]);
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: Date.now() + index,
+                text: res.text || "I didn't quite get that.",
+                sender: "bot",
+                buttons: res.buttons,
+              },
+            ]);
             if (index === data.length - 1) setIsTyping(false);
-          }, index * 600); 
+          }, index * 600);
         });
       } else {
         setIsTyping(false);
       }
     } catch (error) {
       setIsTyping(false);
-      setMessages(prev => [...prev, { id: Date.now() + 999, text: "Error connecting to backend.", sender: 'bot' }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 999,
+          text: "Error connecting to backend.",
+          sender: "bot",
+        },
+      ]);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-200 sm:bg-[#D1D5DB] flex items-center justify-center font-sans antialiased">
+    <div className="fixed inset-0 bg-slate-200 sm:bg-[#D1D5DB] flex items-center justify-center font-sans antialiased overflow-hidden">
       <div className="w-full h-full sm:w-[420px] sm:h-[90vh] sm:max-h-[850px] bg-white flex flex-col shadow-2xl relative sm:rounded-[32px] overflow-hidden">
-        
-        {isLangOpen && <LanguageModal languages={languages} currentLang={lang} onSelect={(c) => {setLang(c); setIsLangOpen(false)}} onClose={() => setIsLangOpen(false)} />}
+        {isLangOpen && (
+          <LanguageModal
+            languages={languages}
+            currentLang={lang}
+            onSelect={(c) => {
+              setLang(c);
+              setIsLangOpen(false);
+            }}
+            onClose={() => setIsLangOpen(false)}
+          />
+        )}
 
-        <ChatHeader welcome={current.welcome} sub={current.sub} lang={lang} onLangClick={() => setIsLangOpen(true)} />
-
-        <main ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-white scrollbar-hide">
-          
+        <ChatHeader
+          welcome={current.welcome}
+          sub={current.sub}
+          lang={lang}
+          onLangClick={() => setIsLangOpen(true)}
+        />
+        <main
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto p-4 space-y-4 bg-white scrollbar-hide"
+        >
           {messages.length === 0 && (
             <div className="text-center py-6 space-y-4">
-                <h2 className="text-xl font-bold text-[#0B3C5D]">{current.welcome}</h2>
-                <p className="text-xs text-gray-500 italic px-6">"Complex Policy → Simple Conversation → Real Empowerment" </p>
-                <div className="grid grid-cols-1 gap-2 px-6 mt-4">
-                  {current.actions.map(act => (
-                    <div key={act} onClick={() => handleSend(act)} className="p-3 border rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-all text-sm font-semibold text-[#0B3C5D] shadow-sm">
-                      {act}
-                    </div>
-                  ))}
-                </div>
+              <h2 className="text-xl font-bold text-[#0B3C5D]">
+                {current.welcome}
+              </h2>
+              <p className="text-xs text-gray-500 italic px-6">
+                "Complex Policy → Simple Conversation → Real Empowerment"{" "}
+              </p>
+              <div className="grid grid-cols-1 gap-2 px-6 mt-4">
+                {current.actions.map((act) => (
+                  <div
+                    key={act}
+                    onClick={() => handleSend(act)}
+                    className="p-3 border rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-all text-sm font-semibold text-[#0B3C5D] shadow-sm"
+                  >
+                    {act}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
           {messages.map((msg) => (
-            <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'} animate-in slide-in-from-bottom-1 duration-300`}>
-              <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-[14px] ${msg.sender === 'user' ? 'bg-[#0B3C5D] text-white rounded-tr-none' : 'bg-[#F1F5F9] text-gray-800 rounded-tl-none border border-slate-50 shadow-sm'}`}>
+            <div
+              key={msg.id}
+              className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"} animate-in slide-in-from-bottom-1 duration-300`}
+            >
+              <div
+                className={`max-w-[85%] px-4 py-3 rounded-2xl text-[14px] ${msg.sender === "user" ? "bg-[#0B3C5D] text-white rounded-tr-none" : "bg-[#F1F5F9] text-gray-800 rounded-tl-none border border-slate-50 shadow-sm"}`}
+              >
                 {msg.text}
               </div>
-              {msg.sender === 'bot' && msg.buttons && (
+              {msg.sender === "bot" && msg.buttons && (
                 <div className="flex gap-2 mt-2 flex-wrap">
                   {msg.buttons.map((btn, i) => (
-                    <button key={i} onClick={() => handleSend(btn.payload)} className="bg-white border border-[#0B3C5D] text-[#0B3C5D] px-4 py-1.5 rounded-full text-[12px] font-bold hover:bg-[#0B3C5D] hover:text-white transition-all active:scale-95 shadow-sm">
+                    <button
+                      key={i}
+                      onClick={() => handleSend(btn.payload)}
+                      className="bg-white border border-[#0B3C5D] text-[#0B3C5D] px-4 py-1.5 rounded-full text-[12px] font-bold hover:bg-[#0B3C5D] hover:text-white transition-all active:scale-95 shadow-sm"
+                    >
                       {btn.title}
                     </button>
                   ))}
@@ -157,23 +212,31 @@ const ShramSetuAI = () => {
             </div>
           )}
         </main>
-
-        <div className="px-4 py-3 border-t overflow-x-auto no-scrollbar bg-white">
+        <div className="px-4 py-3 border-t overflow-x-auto no-scrollbar bg-white shrink-0">
           <div className="flex gap-2">
             {current.actions.map((act) => (
-              <button key={act} onClick={() => handleSend(act)} className="whitespace-nowrap bg-white px-4 py-2 rounded-full text-[11px] font-bold border border-slate-200 hover:border-[#0B3C5D]/30 transition-all shadow-sm">
+              <button
+                key={act}
+                onClick={() => handleSend(act)}
+                className="whitespace-nowrap bg-white px-4 py-2 rounded-full text-[11px] font-bold border border-slate-200 hover:border-[#0B3C5D]/30 transition-all shadow-sm"
+              >
                 {act}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Passing handleVoice and isListening to ChatInput */}
-        <ChatInput 
-          input={input} 
-          setInput={setInput} 
-          onSend={() => handleSend(input)} 
-          placeholder={current.placeholder} 
+        <ChatInput
+          input={input}
+          setInput={setInput}
+          onSend={() => handleSend(input)}
+          placeholder={
+            isListening
+              ? lang === "hi"
+                ? "सुन रहा हूँ..."
+                : "Listening..."
+              : current.placeholder
+          }
           onVoice={handleVoiceInput}
           isListening={isListening}
         />
