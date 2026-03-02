@@ -1,4 +1,4 @@
-import React from 'react';
+ import React, { useState, useEffect } from 'react';
 import { Send, Mic } from 'lucide-react';
 
 const ChatInput = ({ input, setInput, onSend, placeholder, onVoice, isListening }) => (
