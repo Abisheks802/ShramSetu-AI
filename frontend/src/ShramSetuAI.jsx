@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Shield } from 'lucide-react';
 import ChatHeader from './components/ChatHeader';
 import ChatInput from './components/ChatInput';
 import LanguageModal from './components/LanguageModal';
@@ -9,10 +8,39 @@ const ShramSetuAI = () => {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  
   const [messages, setMessages] = useState([]);
+  const [isListening, setIsListening] = useState(false); // Voice state
 
   const scrollRef = useRef(null);
+
+  // --- VOICE INTEGRATION LOGIC START ---
+  const handleVoiceInput = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Browser not supported. Please use Chrome.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang === 'hi' ? 'hi-IN' : 'en-US'; 
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setIsListening(true);
+    
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+      handleSend(transcript); 
+      setIsListening(false);
+    };
+
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    recognition.start();
+  };
+  // --- VOICE INTEGRATION LOGIC END ---
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -88,18 +116,17 @@ const ShramSetuAI = () => {
 
         <main ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-white scrollbar-hide">
           
-          {/* Home Screen Cards */}
           {messages.length === 0 && (
             <div className="text-center py-6 space-y-4">
-               <h2 className="text-xl font-bold text-[#0B3C5D]">{current.welcome}</h2>
-               <p className="text-xs text-gray-500 italic px-6">"Complex Policy → Simple Conversation → Real Empowerment" </p>
-               <div className="grid grid-cols-1 gap-2 px-6 mt-4">
-                 {current.actions.map(act => (
-                   <div key={act} onClick={() => handleSend(act)} className="p-3 border rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-all text-sm font-semibold text-[#0B3C5D] shadow-sm">
-                     {act}
-                   </div>
-                 ))}
-               </div>
+                <h2 className="text-xl font-bold text-[#0B3C5D]">{current.welcome}</h2>
+                <p className="text-xs text-gray-500 italic px-6">"Complex Policy → Simple Conversation → Real Empowerment" </p>
+                <div className="grid grid-cols-1 gap-2 px-6 mt-4">
+                  {current.actions.map(act => (
+                    <div key={act} onClick={() => handleSend(act)} className="p-3 border rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-all text-sm font-semibold text-[#0B3C5D] shadow-sm">
+                      {act}
+                    </div>
+                  ))}
+                </div>
             </div>
           )}
 
@@ -120,7 +147,6 @@ const ShramSetuAI = () => {
             </div>
           ))}
 
-          {/* Typing Animation with Dots */}
           {isTyping && (
             <div className="flex justify-start">
               <div className="bg-[#F1F5F9] px-4 py-2.5 rounded-2xl rounded-tl-none border border-slate-50 flex gap-1 items-center shadow-sm">
@@ -142,7 +168,15 @@ const ShramSetuAI = () => {
           </div>
         </div>
 
-        <ChatInput input={input} setInput={setInput} onSend={() => handleSend(input)} placeholder={current.placeholder} />
+        {/* Passing handleVoice and isListening to ChatInput */}
+        <ChatInput 
+          input={input} 
+          setInput={setInput} 
+          onSend={() => handleSend(input)} 
+          placeholder={current.placeholder} 
+          onVoice={handleVoiceInput}
+          isListening={isListening}
+        />
       </div>
     </div>
   );
