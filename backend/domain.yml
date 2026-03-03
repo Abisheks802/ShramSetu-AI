@@ -14,6 +14,8 @@ intents:
 entities:
   - salary
   - years
+  - last_drawn_salary
+  - years_of_service
 
 slots:
   lang:
@@ -59,7 +61,8 @@ slots:
   last_drawn_salary:
     type: float
     mappings:
-      - type: from_text
+      - type: from_entity
+        entity: salary
         conditions:
           - active_loop: gratuity_form
             requested_slot: last_drawn_salary
@@ -107,11 +110,20 @@ responses:
   - text: "Please enter your basic salary to calculate PF."
 
   utter_ask_last_drawn_salary:
-    - text: "Please enter your last drawn monthly salary."
+  - condition:
+      - type: slot
+        name: lang
+        value: hi
+    text: "कृपया अपनी अंतिम प्राप्त मासिक वेतन राशि दर्ज करें।"
+  - text: "Please enter your last drawn monthly salary."
 
   utter_ask_years_of_service:
-    - text: "How many years have you worked in the company?"
-
+  - condition:
+      - type: slot
+        name: lang
+        value: hi
+    text: "आपने कंपनी में कितने वर्ष कार्य किया है?"
+  - text: "How many years have you worked in the company?"
 forms:
   esic_form:
     required_slots:

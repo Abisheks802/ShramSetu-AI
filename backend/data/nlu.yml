@@ -82,3 +82,15 @@ nlu:
     - Calculate my gratuity
     - Check gratuity amount
     - Gratuity calculation
+
+- intent: provide_last_drawn_salary
+  examples: |
+    - [8000](last_drawn_salary)
+    - my last salary is [15000](last_drawn_salary)
+    - [12000](last_drawn_salary)
+
+- intent: provide_years_of_service
+  examples: |
+    - [9](years_of_service)
+    - [5](years_of_service) years
+    - I worked [7](years_of_service) years
