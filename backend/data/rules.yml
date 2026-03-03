@@ -28,6 +28,7 @@ rules:
 - rule: Start PF form
   steps:
   - intent: calculate_pf
+  - action: action_detect_language
   - action: action_reset_pf_slot
   - action: pf_form
   - active_loop: pf_form
@@ -48,6 +49,7 @@ rules:
 - rule: Start Gratuity form
   steps:
   - intent: calculate_gratuity
+  - action: action_detect_language
   - action: action_reset_gratuity_slots
   - action: gratuity_form
   - active_loop: gratuity_form

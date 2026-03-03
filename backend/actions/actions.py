@@ -115,40 +115,45 @@ class ActionCheckESICEligibility(Action):
 
 class ActionCalculatePF(Action):
 
-    def name(self) -> Text:
+    def name(self):
         return "action_calculate_pf"
 
-    def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: Dict[Text, Any],
-    ) -> List[Dict[Text, Any]]:
+    def run(self, dispatcher, tracker, domain):
 
         basic_salary = tracker.get_slot("basic_salary")
+        lang = tracker.get_slot("lang")
 
-        # Safety check
         if basic_salary is None:
-            dispatcher.utter_message(
-                text="Invalid salary amount. Please enter a valid number."
-            )
+            if lang == "hi":
+                dispatcher.utter_message(text="कृपया पहले अपनी बेसिक सैलरी दर्ज करें।")
+            else:
+                dispatcher.utter_message(text="Please provide your basic salary first.")
             return []
 
         basic_salary = float(basic_salary)
 
-        employee_pf = basic_salary * 0.12
-        employer_pf = basic_salary * 0.12
-        total_pf = employee_pf + employer_pf
+        employee = basic_salary * 0.12
+        employer = basic_salary * 0.12
+        total = employee + employer
 
-        dispatcher.utter_message(
-            text=(
+        if lang == "hi":
+            dispatcher.utter_message(
+                text=
+                f"आपका PF विवरण:\n"
+                f"• बेसिक सैलरी: ₹{basic_salary:,.2f}\n"
+                f"• कर्मचारी योगदान (12%): ₹{employee:,.2f}\n"
+                f"• नियोक्ता योगदान (12%): ₹{employer:,.2f}\n"
+                f"• कुल मासिक PF योगदान: ₹{total:,.2f}"
+            )
+        else:
+            dispatcher.utter_message(
+                text=
                 f"Here is your PF breakdown:\n"
                 f"• Basic Salary: ₹{basic_salary:,.2f}\n"
-                f"• Employee Contribution (12%): ₹{employee_pf:,.2f}\n"
-                f"• Employer Contribution (12%): ₹{employer_pf:,.2f}\n"
-                f"• Total Monthly PF Contribution: ₹{total_pf:,.2f}"
+                f"• Employee Contribution (12%): ₹{employee:,.2f}\n"
+                f"• Employer Contribution (12%): ₹{employer:,.2f}\n"
+                f"• Total Monthly PF Contribution: ₹{total:,.2f}"
             )
-        )
 
         return []
     

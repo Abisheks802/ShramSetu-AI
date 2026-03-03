@@ -57,6 +57,9 @@ nlu:
     - calculate provident fund
     - PF check
     - how much PF will I get
+    - मेरा PF कितना होगा?
+    - PF की गणना करो
+    - मेरा भविष्य निधि कितना है?
 
 - intent: provide_basic_salary
   examples: |
@@ -68,6 +71,9 @@ nlu:
     - 8900
     - 15000
     - 22000
+    - मेरी बेसिक सैलरी [15000](salary) है
+    - [9000](salary) है
+    - 12000 है
 
 
 - intent: calculate_gratuity

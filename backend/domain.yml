@@ -50,7 +50,8 @@ slots:
   basic_salary:
     type: float
     mappings:
-      - type: from_text
+      - type: from_entity
+        entity: salary
         conditions:
           - active_loop: pf_form
             requested_slot: basic_salary
@@ -98,7 +99,12 @@ responses:
     - text: "Checking your eligibility..."
   
   utter_ask_basic_salary:
-     - text: "Please enter your basic salary to calculate PF."
+  - condition:
+      - type: slot
+        name: lang
+        value: hi
+    text: "PF की गणना के लिए अपनी बेसिक सैलरी दर्ज करें।"
+  - text: "Please enter your basic salary to calculate PF."
 
   utter_ask_last_drawn_salary:
     - text: "Please enter your last drawn monthly salary."
