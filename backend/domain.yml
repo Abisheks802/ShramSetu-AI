@@ -16,6 +16,11 @@ entities:
   - years
 
 slots:
+  lang:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: custom
   salary:
     type: float
     mappings:
@@ -67,13 +72,29 @@ slots:
             requested_slot: years_of_service
 
 responses:
+
   utter_ask_salary:
+    - condition:
+        - type: slot
+          name: lang
+          value: hi
+      text: "आपकी मासिक सैलरी कितनी है?"
     - text: "What is your monthly salary?"
 
   utter_ask_employer_registered:
+    - condition:
+        - type: slot
+          name: lang
+          value: hi
+      text: "क्या आपका नियोक्ता ESIC के तहत पंजीकृत है? (हाँ/नहीं)"
     - text: "Is your employer registered under ESIC? (Yes/No)"
 
   utter_checking:
+    - condition:
+        - type: slot
+          name: lang
+          value: hi
+      text: "आपकी पात्रता जांची जा रही है..."
     - text: "Checking your eligibility..."
   
   utter_ask_basic_salary:
@@ -107,3 +128,4 @@ actions:
   - action_reset_pf_slot
   - action_calculate_gratuity
   - action_reset_gratuity_slots
+  - action_detect_language

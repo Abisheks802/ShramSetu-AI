@@ -5,6 +5,7 @@ rules:
 - rule: Start ESIC eligibility form
   steps:
   - intent: check_esic_eligibility
+  - action: action_detect_language
   - action: action_reset_esic_slots
   - action: esic_form
   - active_loop: esic_form
@@ -58,3 +59,6 @@ rules:
   - action: gratuity_form
   - active_loop: null
   - action: action_calculate_gratuity
+
+
+ 

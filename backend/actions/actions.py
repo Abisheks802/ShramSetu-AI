@@ -37,50 +37,65 @@ class ActionCheckESICEligibility(Action):
     def name(self) -> Text:
         return "action_check_esic_eligibility"
 
-    def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: Dict[Text, Any],
-    ) -> List[Dict[Text, Any]]:
+    def run(self, dispatcher, tracker, domain):
 
         salary = tracker.get_slot("salary")
         employer_registered = tracker.get_slot("employer_registered")
+        lang = tracker.get_slot("lang")
 
-        # Safety check
         if salary is None or employer_registered is None:
-            dispatcher.utter_message(
-                text="I need both salary and employer registration details to check eligibility."
-            )
+            if lang == "hi":
+                dispatcher.utter_message(
+                    text="पात्रता जांचने के लिए मुझे सैलरी और नियोक्ता पंजीकरण की जानकारी चाहिए।"
+                )
+            else:
+                dispatcher.utter_message(
+                    text="I need both salary and employer registration details to check eligibility."
+                )
             return []
 
         salary = float(salary)
 
-        
-
-        # ----------------------------
-        # RULE 1: Wage Rule
-        # ----------------------------
+        # Rule 1: Salary limit
         if salary > 21000:
-            dispatcher.utter_message(
-                text="You are NOT eligible for ESIC because your salary exceeds ₹21,000."
-            )
+            if lang == "hi":
+                dispatcher.utter_message(
+                    text="आप ESIC के लिए पात्र नहीं हैं क्योंकि आपकी सैलरी ₹21,000 से अधिक है।"
+                )
+            else:
+                dispatcher.utter_message(
+                    text="You are NOT eligible for ESIC because your salary exceeds ₹21,000."
+                )
             return []
 
-        # ----------------------------
-        # RULE 4: Employer Registration
-        # ----------------------------
+        # Rule 2: Employer not registered
         if employer_registered is False:
-            dispatcher.utter_message(
-                text="You are legally eligible for ESIC, but your employer is not registered. Benefits cannot be activated."
-            )
+            if lang == "hi":
+                dispatcher.utter_message(
+                    text="आप कानूनी रूप से ESIC के पात्र हैं, लेकिन आपका नियोक्ता पंजीकृत नहीं है। लाभ सक्रिय नहीं किए जा सकते।"
+                )
+            else:
+                dispatcher.utter_message(
+                    text="You are legally eligible for ESIC, but your employer is not registered. Benefits cannot be activated."
+                )
             return []
 
-        # ----------------------------
-        # Eligible Case
-        # ----------------------------
-        dispatcher.utter_message(
-            text=
+        # Eligible case
+        if lang == "hi":
+            dispatcher.utter_message(
+                text=
+                "हाँ, आप ESIC के लिए पात्र हैं।\n\n"
+                "आपको निम्न लाभ मिल सकते हैं:\n"
+                "• आपके और आपके परिवार के लिए चिकित्सा सुविधा\n"
+                "• बीमारी भत्ता (नकद सहायता)\n"
+                "• मातृत्व लाभ\n"
+                "• विकलांगता लाभ\n"
+                "• मृत्यु की स्थिति में आश्रित लाभ\n"
+                "• अंतिम संस्कार खर्च सहायता\n"
+            )
+        else:
+            dispatcher.utter_message(
+                text=
                 "Yes, you are eligible for ESIC.\n\n"
                 "Here are the benefits you can receive:\n"
                 "• Medical treatment for you and your family\n"
@@ -89,7 +104,8 @@ class ActionCheckESICEligibility(Action):
                 "• Disability benefit\n"
                 "• Dependent benefit in case of death\n"
                 "• Funeral expenses coverage\n"
-        )
+            )
+
         return []
     
 
@@ -206,3 +222,18 @@ class ActionCalculateGratuity(Action):
         )
 
         return []
+
+ # -----------------------------------------
+ # Detect Language Automatically -----------
+ # -----------------------------------------
+
+class ActionDetectLanguage(Action):
+
+    def name(self):
+        return "action_detect_language"
+    def run(self, dispatcher, tracker, domain):
+        text = tracker.latest_message.get("text")
+        if any('\u0900' <= ch <= '\u097F' for ch in text):
+            return [SlotSet("lang", "hi")]
+        else:
+            return [SlotSet("lang", "en")]

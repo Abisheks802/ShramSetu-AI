@@ -14,6 +14,9 @@ nlu:
     - I want to check ESIC eligibility
     - check ESIC
     - ESIC status
+    - ESIC पात्रता जांचें
+    - क्या मैं ESIC के लिए पात्र हूँ?
+    - ESIC चेक करो
 
 - intent: provide_salary
   examples: |
