@@ -190,6 +190,8 @@ class ActionResetGratuitySlots(Action):
     
 
 
+
+    
 class ActionCalculateGratuity(Action):
 
     def name(self):
@@ -199,34 +201,46 @@ class ActionCalculateGratuity(Action):
 
         salary = tracker.get_slot("last_drawn_salary")
         years = tracker.get_slot("years_of_service")
+        lang = tracker.get_slot("lang")
 
-        # Convert to float safely
         try:
             salary = float(salary)
             years = float(years)
         except:
-            dispatcher.utter_message(text="Invalid input. Please enter numbers only.")
+            if lang == "hi":
+                dispatcher.utter_message(text="कृपया केवल संख्याएँ दर्ज करें।")
+            else:
+                dispatcher.utter_message(text="Invalid input. Please enter numbers only.")
             return []
 
-        # Check minimum 5 years
         if years < 5:
-            dispatcher.utter_message(
-                text="You are not eligible for gratuity. Minimum 5 years of service required."
-            )
+            if lang == "hi":
+                dispatcher.utter_message(
+                    text="आप ग्रेच्युटी के पात्र नहीं हैं। न्यूनतम 5 वर्ष सेवा आवश्यक है।"
+                )
+            else:
+                dispatcher.utter_message(
+                    text="You are not eligible for gratuity. Minimum 5 years of service required."
+                )
             return []
 
-        #  Gratuity formula
         gratuity = (salary * 15 * years) / 26
 
-        # Apply 20 lakh cap
         if gratuity > 2000000:
             gratuity = 2000000
 
-        dispatcher.utter_message(
-            text=f"Your gratuity amount is ₹{gratuity:,.2f}"
-        )
+        if lang == "hi":
+            dispatcher.utter_message(
+                text=f"आपकी ग्रेच्युटी राशि है: ₹{gratuity:,.2f}"
+            )
+        else:
+            dispatcher.utter_message(
+                text=f"Your gratuity amount is ₹{gratuity:,.2f}"
+            )
 
         return []
+
+  
 
  # -----------------------------------------
  # Detect Language Automatically -----------

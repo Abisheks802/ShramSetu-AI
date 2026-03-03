@@ -82,15 +82,32 @@ nlu:
     - Calculate my gratuity
     - Check gratuity amount
     - Gratuity calculation
+    - calculate gratuity
+    - gratuity check
+    - ग्रेच्युटी की गणना करो
+    - मेरी ग्रेच्युटी कितनी होगी?
+    - ग्रेच्युटी चेक करो
+    - gratuity ka calculation karo
 
 - intent: provide_last_drawn_salary
   examples: |
     - [8000](last_drawn_salary)
     - my last salary is [15000](last_drawn_salary)
     - [12000](last_drawn_salary)
+    - it is [25000](last_drawn_salary)
+    - salary [18000](last_drawn_salary)
+    - मेरी अंतिम सैलरी [20000](last_drawn_salary) है
+    - [30000](last_drawn_salary) है
+    - 45000
+    - 98000
 
 - intent: provide_years_of_service
   examples: |
     - [9](years_of_service)
     - [5](years_of_service) years
     - I worked [7](years_of_service) years
+    - [6](years_of_service) year
+    - it is [10](years_of_service)
+    - मैंने [8](years_of_service) साल काम किया
+    - [4](years_of_service) साल
+    - 12
