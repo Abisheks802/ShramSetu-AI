@@ -107,4 +107,3 @@ actions:
   - action_reset_pf_slot
   - action_calculate_gratuity
   - action_reset_gratuity_slots
-
