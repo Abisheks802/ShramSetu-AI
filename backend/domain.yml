@@ -1,19 +1,26 @@
 version: "3.1"
 
 intents:
-  - calculate_gratuity
-  - provide_basic_salary
-  - provide_years_of_service
-  - calculate_pf
+  # ESIC
+  - check_esic_eligibility
   - provide_salary
-  - check_esic
+
+  # PF
+  - calculate_pf
+  - provide_basic_salary
+
+  # Gratuity
+  - calculate_gratuity
+  - provide_last_drawn_salary
+  - provide_years_of_service
+
+  # Common
   - affirm
   - deny
   - thank_you
 
 entities:
   - salary
-  - years
   - last_drawn_salary
   - years_of_service
 
@@ -23,6 +30,8 @@ slots:
     influence_conversation: true
     mappings:
       - type: custom
+
+  # -------- ESIC form slots --------
   salary:
     type: float
     mappings:
@@ -42,6 +51,7 @@ slots:
         conditions:
           - active_loop: esic_form
             requested_slot: employer_registered
+
       - type: from_intent
         intent: deny
         value: false
@@ -49,6 +59,7 @@ slots:
           - active_loop: esic_form
             requested_slot: employer_registered
 
+  # -------- PF form slots --------
   basic_salary:
     type: float
     mappings:
@@ -57,12 +68,21 @@ slots:
         conditions:
           - active_loop: pf_form
             requested_slot: basic_salary
+      - type: from_text
+        conditions:
+          - active_loop: pf_form
+            requested_slot: basic_salary
 
+  # -------- Gratuity form slots --------
   last_drawn_salary:
     type: float
     mappings:
       - type: from_entity
-        entity: salary
+        entity: last_drawn_salary
+        conditions:
+          - active_loop: gratuity_form
+            requested_slot: last_drawn_salary
+      - type: from_text
         conditions:
           - active_loop: gratuity_form
             requested_slot: last_drawn_salary
@@ -70,13 +90,17 @@ slots:
   years_of_service:
     type: float
     mappings:
+      - type: from_entity
+        entity: years_of_service
+        conditions:
+          - active_loop: gratuity_form
+            requested_slot: years_of_service
       - type: from_text
         conditions:
           - active_loop: gratuity_form
             requested_slot: years_of_service
 
 responses:
-
   utter_ask_salary:
     - condition:
         - type: slot
@@ -100,36 +124,37 @@ responses:
           value: hi
       text: "आपकी पात्रता जांची जा रही है..."
     - text: "Checking your eligibility..."
-  
+
   utter_ask_basic_salary:
-  - condition:
-      - type: slot
-        name: lang
-        value: hi
-    text: "PF की गणना के लिए अपनी बेसिक सैलरी दर्ज करें।"
-  - text: "Please enter your basic salary to calculate PF."
+    - condition:
+        - type: slot
+          name: lang
+          value: hi
+      text: "PF की गणना के लिए अपनी बेसिक सैलरी दर्ज करें।"
+    - text: "Please enter your basic salary to calculate PF."
 
   utter_ask_last_drawn_salary:
-  - condition:
-      - type: slot
-        name: lang
-        value: hi
-    text: "कृपया अपनी अंतिम प्राप्त मासिक वेतन राशि दर्ज करें।"
-  - text: "Please enter your last drawn monthly salary."
+    - condition:
+        - type: slot
+          name: lang
+          value: hi
+      text: "कृपया अपनी अंतिम प्राप्त मासिक वेतन राशि दर्ज करें।"
+    - text: "Please enter your last drawn monthly salary."
 
   utter_ask_years_of_service:
-  - condition:
-      - type: slot
-        name: lang
-        value: hi
-    text: "आपने कंपनी में कितने वर्ष कार्य किया है?"
-  - text: "How many years have you worked in the company?"
+    - condition:
+        - type: slot
+          name: lang
+          value: hi
+      text: "आपने कंपनी में कितने वर्ष कार्य किया है?"
+    - text: "How many years have you worked in the company?"
+
 forms:
   esic_form:
     required_slots:
       - salary
       - employer_registered
-  
+
   pf_form:
     required_slots:
       - basic_salary
