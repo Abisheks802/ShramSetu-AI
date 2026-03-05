@@ -114,8 +114,18 @@ responses:
         - type: slot
           name: lang
           value: hi
-      text: "क्या आपका नियोक्ता ESIC के तहत पंजीकृत है? (हाँ/नहीं)"
-    - text: "Is your employer registered under ESIC? (Yes/No)"
+      text: "क्या आपका नियोक्ता ESIC के तहत पंजीकृत है?"
+      buttons:
+        - title: 'हाँ ✓'
+          payload: '/affirm'
+        - title: 'नहीं ✗'
+          payload: '/deny'
+    - text: "Is your employer registered under ESIC?"
+      buttons:
+       - title: 'Yes ✓'
+         payload: '/affirm'
+       - title: 'No ✗'
+         payload: '/deny'
 
   utter_checking:
     - condition:
