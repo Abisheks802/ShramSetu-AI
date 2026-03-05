@@ -1,24 +1,18 @@
 version: "3.1"
 
 intents:
-  # ESIC
   - check_esic_eligibility
   - provide_salary
-
-  # PF
+  - generate_complaint
+  - affirm
+  - deny
   - calculate_pf
   - provide_basic_salary
-
-  # Gratuity
   - calculate_gratuity
   - provide_last_drawn_salary
   - provide_years_of_service
-
-  # Common
-  - affirm
-  - deny
   - thank_you
-
+  
 entities:
   - salary
   - last_drawn_salary
@@ -30,6 +24,25 @@ slots:
     influence_conversation: true
     mappings:
       - type: custom
+
+  employee_name:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_text
+
+  employer_details:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_text
+
+  joining_date:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_text
+      
 
   # -------- ESIC form slots --------
   salary:
@@ -148,6 +161,31 @@ responses:
           value: hi
       text: "आपने कंपनी में कितने वर्ष कार्य किया है?"
     - text: "How many years have you worked in the company?"
+ 
+
+  utter_ask_employee_name:
+    - condition:
+        - type: slot
+          name: lang
+          value: hi
+      text: "कृपया अपना पूरा नाम लिखें।"
+    - text: "Please enter your full name."
+
+  utter_ask_employer_details:
+    - condition:
+        - type: slot
+          name: lang
+          value: hi
+      text: "अपने नियोक्ता का नाम और कार्यालय का पूरा पता लिखें।"
+    - text: "Enter your employer name and full address."
+
+  utter_ask_joining_date:
+    - condition:
+        - type: slot
+          name: lang
+          value: hi
+      text: "आपकी जॉइनिंग की तारीख क्या है?"
+    - text: "What was your date of joining?"
 
 forms:
   esic_form:
@@ -164,6 +202,13 @@ forms:
       - last_drawn_salary
       - years_of_service
 
+  complaint_form:
+    required_slots:
+      - employee_name
+      - employer_details
+      - joining_date
+
+
 actions:
   - action_reset_esic_slots
   - action_check_esic_eligibility
@@ -172,3 +217,4 @@ actions:
   - action_calculate_gratuity
   - action_reset_gratuity_slots
   - action_detect_language
+  - action_generate_complaint_pdf
