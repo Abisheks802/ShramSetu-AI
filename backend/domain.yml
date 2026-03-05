@@ -117,15 +117,15 @@ responses:
       text: "क्या आपका नियोक्ता ESIC के तहत पंजीकृत है?"
       buttons:
         - title: 'हाँ ✓'
-          payload: '/affirm'
+          payload: 'हाँ'
         - title: 'नहीं ✗'
-          payload: '/deny'
+          payload: 'नहीं'
     - text: "Is your employer registered under ESIC?"
       buttons:
        - title: 'Yes ✓'
-         payload: '/affirm'
+         payload: 'Yes'
        - title: 'No ✗'
-         payload: '/deny'
+         payload: 'No'
 
   utter_checking:
     - condition:
