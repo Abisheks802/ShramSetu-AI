@@ -188,7 +188,7 @@ responses:
     - text: "Please enter your full name."
 
   utter_ask_employer_details:
-    - text: "Enter your employer name and full address."
+    - text: "Enter your company name ?"
 
   utter_ask_joining_date:
     - text: "What was your date of joining?"
