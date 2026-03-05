@@ -226,18 +226,12 @@ class ActionGenerateComplaint(Action):
 To,
 The Regional Director
 Employees' State Insurance Corporation
-
 Subject: Complaint Regarding Non-Registration Under ESIC
-
 Respected Sir/Madam,
-
-I, {name}, am employed at {company} since {joining}.
+I, {name}, an employed at {company} since {joining}.
 My monthly salary is within the ESIC wage ceiling.
-
 Despite meeting eligibility criteria, my employer has not registered under ESIC.
-
 Kindly investigate this matter.
-
 Yours faithfully,
 {name}
 """

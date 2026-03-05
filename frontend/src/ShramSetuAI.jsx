@@ -25,29 +25,39 @@ const ShramSetuAI = () => {
     alert("Copied to clipboard!");
   };
 
-  const downloadPDF = (text) => {
-    if (!text) {
-      alert("No content found!");
-      return;
+ const downloadPDF = (text) => {
+  if (!text) {
+    alert("No content found!");
+    return;
+  }
+
+  const doc = new jsPDF("p", "mm", "a4");
+
+  doc.setFont("Times", "Normal");
+  doc.setFontSize(12);
+
+  const margin = 15;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  const maxLineWidth = pageWidth - margin * 2;
+
+  const lines = doc.splitTextToSize(text, maxLineWidth);
+
+  let y = margin;
+
+  lines.forEach((line) => {
+    if (y + 7 > pageHeight - margin) {
+      doc.addPage();
+      y = margin;
     }
-    const doc = new jsPDF();
-    doc.setFont("Times", "Normal");
-    doc.setFontSize(12);
-    const margin = 15;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const maxLineWidth = pageWidth - margin * 2;
-    const lines = doc.splitTextToSize(text, maxLineWidth);
-    let y = 20;
-    lines.forEach((line) => {
-      if (y > 280) {
-        doc.addPage();
-        y = 20;
-      }
-      doc.text(line, margin, y);
-      y += 7;
-    });
-    doc.save("Complaint_Letter.pdf");
-  };
+
+    doc.text(line, margin, y);
+    y += 7;
+  });
+
+  doc.save("Complaint_Letter.pdf");
+};
 
   const handleVoiceInput = () => {
     const SpeechRecognition =
