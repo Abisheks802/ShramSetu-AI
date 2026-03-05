@@ -74,6 +74,7 @@ rules:
 - rule: Start Complaint Form
   steps:
   - intent: generate_complaint
+  - action: action_detect_language
   - action: complaint_form
   - active_loop: complaint_form
 
@@ -85,4 +86,4 @@ rules:
   steps:
   - action: complaint_form
   - active_loop: null
-  - action: action_generate_complaint_pdf
+  - action: action_generate_complaint

@@ -44,6 +44,25 @@ nlu:
     - nope
     - it is not registered
 
+- intent: generate_complaint
+  examples: |
+    - generate complaint
+    - file a complaint
+    - create complaint letter
+    - my employer is not registered
+    - report employer to ESIC
+    - make complaint
+
+- intent: provide_complaint_details
+  examples: |
+    - Rahul Kumar
+    - My name is Rahul Kumar
+    - ABC Pvt Ltd Delhi
+    - My employer is ABC Pvt Ltd
+    - 12 March 2022
+    - 01-01-2020
+    - 1/01/2022
+
 
 # =========================
 # PF

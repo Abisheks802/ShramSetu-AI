@@ -33,7 +33,7 @@ class ActionCheckESICEligibility(Action):
 
     def run(self, dispatcher, tracker, domain):
 
-        salary = tracker.get_slot("salary")
+        salary = tracker.get_slot("salary") or "Not Provided"
         employer_registered = tracker.get_slot("employer_registered")
         lang = tracker.get_slot("lang")
 
@@ -210,17 +210,17 @@ class ActionDetectLanguage(Action):
 # COMPLAINT LETTER
 # ---------------------------------------------------
 
-class ActionGenerateComplaintPDF(Action):
+ 
+class ActionGenerateComplaint(Action):
 
-    def name(self) -> Text:
-        return "action_generate_complaint_pdf"
+    def name(self):
+        return "action_generate_complaint"
 
     def run(self, dispatcher, tracker, domain):
 
         name = tracker.get_slot("employee_name")
-        employer = tracker.get_slot("employer_details")
+        company = tracker.get_slot("employer_details")
         joining = tracker.get_slot("joining_date")
-        salary = tracker.get_slot("salary")
 
         letter = f"""
 To,
@@ -231,8 +231,8 @@ Subject: Complaint Regarding Non-Registration Under ESIC
 
 Respected Sir/Madam,
 
-I, {name}, am employed at {employer} since {joining}.
-My monthly salary is Rs. {salary}, which is within the ESIC wage ceiling.
+I, {name}, am employed at {company} since {joining}.
+My monthly salary is within the ESIC wage ceiling.
 
 Despite meeting eligibility criteria, my employer has not registered under ESIC.
 
@@ -242,7 +242,6 @@ Yours faithfully,
 {name}
 """
 
-        dispatcher.utter_message(text="Here is your complaint letter:")
         dispatcher.utter_message(text=letter)
 
         return []
