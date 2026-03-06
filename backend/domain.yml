@@ -185,12 +185,27 @@ responses:
  
 
   utter_ask_employee_name:
+    - condition:
+        - type: slot
+          name: lang
+          value: hi
+      text: "कृपया अपना पूरा नाम दर्ज करें।"
     - text: "Please enter your full name."
 
   utter_ask_employer_details:
-    - text: "Enter your company name ?"
+    - condition:
+        - type: slot
+          name: lang
+          value: hi
+      text: "कृपया अपनी कंपनी का नाम दर्ज करें।"
+    - text: "Enter your company name."
 
   utter_ask_joining_date:
+    - condition:
+        - type: slot
+          name: lang
+          value: hi
+      text: "कृपया अपनी जॉइनिंग की तारीख बताएं।"
     - text: "What was your date of joining?"
 
 forms:

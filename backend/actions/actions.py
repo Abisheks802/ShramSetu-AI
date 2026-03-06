@@ -33,7 +33,7 @@ class ActionCheckESICEligibility(Action):
 
     def run(self, dispatcher, tracker, domain):
 
-        salary = tracker.get_slot("salary") or "Not Provided"
+        salary = tracker.get_slot("salary")
         employer_registered = tracker.get_slot("employer_registered")
         lang = tracker.get_slot("lang")
 
@@ -86,9 +86,30 @@ class ActionCheckESICEligibility(Action):
             return []
 
         # Fully eligible
-        dispatcher.utter_message(
-            text="You are eligible for ESIC and benefits can be activated."
-        )
+        if lang == "hi":
+            dispatcher.utter_message(
+                text=(
+                    "आप ESIC के लिए पात्र हैं और आपको निम्नलिखित लाभ मिल सकते हैं:\n"
+                    "1️⃣ चिकित्सा सुविधा (Medical Benefits)"
+                    "2️⃣ बीमारी भत्ता (Sickness Benefit)"
+                    "3️⃣ मातृत्व लाभ (Maternity Benefit)"
+                    "4️⃣ दुर्घटना लाभ (Disablement Benefit)"
+                    "5️⃣ आश्रित लाभ (Dependants Benefit)"
+                    "6️⃣ अंतिम संस्कार सहायता (Funeral Expenses)"
+                )
+            )
+        else:
+            dispatcher.utter_message(
+                text=(
+                    "You are eligible for ESIC. You can receive the following benefits:\n"
+                    "1️⃣ Medical Benefits\n"
+                    "2️⃣ Sickness Benefit\n"
+                    "3️⃣ Maternity Benefit\n"
+                    "4️⃣ Disablement Benefit\n"
+                    "5️⃣ Dependants Benefit\n"
+                    "6️⃣ Funeral Expenses"
+                )
+            )
 
         return []
 
@@ -105,9 +126,15 @@ class ActionCalculatePF(Action):
     def run(self, dispatcher, tracker, domain):
 
         basic_salary = tracker.get_slot("basic_salary")
+        lang = tracker.get_slot("lang")
 
         if basic_salary is None:
-            dispatcher.utter_message(text="Please provide your basic salary.")
+
+            if lang == "hi":
+                dispatcher.utter_message(text="कृपया अपनी बेसिक सैलरी दर्ज करें।")
+            else:
+                dispatcher.utter_message(text="Please provide your basic salary.")
+
             return []
 
         basic_salary = float(basic_salary)
@@ -116,13 +143,25 @@ class ActionCalculatePF(Action):
         employer = basic_salary * 0.12
         total = employee + employer
 
-        dispatcher.utter_message(
-            text=
-            f"Basic Salary: ₹{basic_salary}\n"
-            f"Employee Contribution: ₹{employee}\n"
-            f"Employer Contribution: ₹{employer}\n"
-            f"Total PF: ₹{total}"
-        )
+        if lang == "hi":
+
+            dispatcher.utter_message(
+                text=
+                f"बेसिक सैलरी: ₹{basic_salary}\n"
+                f"कर्मचारी अंशदान: ₹{employee}\n"
+                f"नियोक्ता अंशदान: ₹{employer}\n"
+                f"कुल PF: ₹{total}"
+            )
+
+        else:
+
+            dispatcher.utter_message(
+                text=
+                f"Basic Salary: ₹{basic_salary}\n"
+                f"Employee Contribution: ₹{employee}\n"
+                f"Employer Contribution: ₹{employer}\n"
+                f"Total PF: ₹{total}"
+            )
 
         return []
 
@@ -171,18 +210,34 @@ class ActionCalculateGratuity(Action):
 
         salary = float(tracker.get_slot("last_drawn_salary"))
         years = float(tracker.get_slot("years_of_service"))
+        lang = tracker.get_slot("lang")
 
         if years < 5:
-            dispatcher.utter_message(
-                text="Minimum 5 years service required for gratuity."
-            )
+
+            if lang == "hi":
+                dispatcher.utter_message(
+                    text="ग्रेच्युटी के लिए कम से कम 5 वर्ष की सेवा आवश्यक है।"
+                )
+            else:
+                dispatcher.utter_message(
+                    text="Minimum 5 years service required for gratuity."
+                )
+
             return []
 
         gratuity = (salary * 15 * years) / 26
 
-        dispatcher.utter_message(
-            text=f"Your gratuity amount is ₹{gratuity}"
-        )
+        if lang == "hi":
+
+            dispatcher.utter_message(
+                text=f"आपकी ग्रेच्युटी राशि ₹{gratuity} है।"
+            )
+
+        else:
+
+            dispatcher.utter_message(
+                text=f"Your gratuity amount is ₹{gratuity}"
+            )
 
         return []
 
@@ -221,17 +276,39 @@ class ActionGenerateComplaint(Action):
         name = tracker.get_slot("employee_name")
         company = tracker.get_slot("employer_details")
         joining = tracker.get_slot("joining_date")
+        lang = tracker.get_slot("lang")
 
-        letter = f"""
+        # ---------------- HINDI LETTER ----------------
+        if lang == "hi":
+
+            letter = f"""
+सेवा में,
+क्षेत्रीय निदेशक
+कर्मचारी राज्य बीमा निगम (ESIC)
+विषय: ESIC पंजीकरण न होने के संबंध में शिकायत।
+महोदय/महोदया,
+मेरा नाम {name} है। मैं {company} में {joining} से कार्य कर रहा/रही हूँ।
+मेरी मासिक वेतन ESIC की पात्रता सीमा के अंतर्गत आती है। 
+फिर भी मेरे नियोक्ता ने ESIC के अंतर्गत पंजीकरण नहीं कराया है।
+अतः आपसे निवेदन है कि कृपया इस मामले की जांच कर उचित कार्रवाई करें।
+धन्यवाद।
+भवदीय,  
+{name}
+"""
+
+        # ---------------- ENGLISH LETTER ----------------
+        else:
+
+            letter = f"""
 To,
 The Regional Director
-Employees' State Insurance Corporation
+Employees' State Insurance Corporation (ESIC)
 Subject: Complaint Regarding Non-Registration Under ESIC
 Respected Sir/Madam,
-I, {name}, an employed at {company} since {joining}.
-My monthly salary is within the ESIC wage ceiling.
-Despite meeting eligibility criteria, my employer has not registered under ESIC.
-Kindly investigate this matter.
+I, {name}, am employed at {company} since {joining}.
+My monthly salary falls within the ESIC eligibility limit. 
+However, my employer has not registered under ESIC.
+Kindly investigate this matter and take necessary action.
 Yours faithfully,
 {name}
 """

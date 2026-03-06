@@ -252,7 +252,7 @@ const ShramSetuAI = () => {
               >
                 {msg.text}
               </div>
-              {msg.sender === "bot" && msg.text?.startsWith("To,") && (
+              {msg.sender === "bot" && (msg.text?.startsWith("To,")|| msg.text?.startsWith("सेवा में")) && (
                 <div className="flex gap-2 mt-2">
                   <button
                     onClick={() => copyToClipboard(msg.text)}
