@@ -4,6 +4,7 @@ import ChatInput from "./components/ChatInput";
 import LanguageModal from "./components/LanguageModal";
 import jsPDF from "jspdf";
 import { Home } from "lucide-react";
+import html2pdf from "html2pdf.js";
 
 const ShramSetuAI = () => {
   const [lang, setLang] = useState("en");
@@ -30,22 +31,32 @@ const ShramSetuAI = () => {
       alert("No content found!");
       return;
     }
-    const doc = new jsPDF();
+
+    const doc = new jsPDF("p", "mm", "a4");
+
     doc.setFont("Times", "Normal");
     doc.setFontSize(12);
+
     const margin = 15;
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
     const maxLineWidth = pageWidth - margin * 2;
+
     const lines = doc.splitTextToSize(text, maxLineWidth);
-    let y = 20;
+
+    let y = margin;
+
     lines.forEach((line) => {
-      if (y > 280) {
+      if (y + 7 > pageHeight - margin) {
         doc.addPage();
-        y = 20;
+        y = margin;
       }
+
       doc.text(line, margin, y);
       y += 7;
     });
+
     doc.save("Complaint_Letter.pdf");
   };
 
@@ -84,6 +95,53 @@ const ShramSetuAI = () => {
 
   recognition.start();
 };
+  const generatePDF = (text) => {
+    const element = document.createElement("div");
+
+    element.innerHTML = `
+    <div style="
+        font-family: 'Noto Sans Devanagari', Arial;
+        padding: 20px;
+        line-height: 1.8;
+        font-size: 14px;
+    ">
+        ${text.replace(/\n/g, "<br/>")}
+    </div>
+  `;
+
+    html2pdf()
+      .from(element)
+      .set({
+        margin: 10,
+        filename: "ESIC_Complaint.pdf",
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      })
+      .save();
+  };
+  const handleVoiceInput = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Browser not supported.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang === "hi" ? "hi-IN" : "en-IN";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+    // 2f3add09d94e418a54cb6c6de4f9484f77fcae23
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+      handleSend(transcript);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognition.start();
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -250,26 +308,33 @@ const ShramSetuAI = () => {
               className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"} animate-in slide-in-from-bottom-1 duration-300`}
             >
               <div
-                className={`max-w-[85%] px-4 py-3 rounded-2xl text-[14px] ${msg.sender === "user" ? "bg-[#0B3C5D] text-white rounded-tr-none" : "bg-[#F1F5F9] text-gray-800 rounded-tl-none border border-slate-50 shadow-sm"}`}
+                className={`max-w-[85%] px-4 py-3 rounded-2xl text-[14px] whitespace-pre-line font-serif leading-relaxed
+  ${
+    msg.sender === "user"
+      ? "bg-[#0B3C5D] text-white rounded-tr-none"
+      : "bg-[#F1F5F9] text-gray-800 rounded-tl-none border border-slate-50 shadow-sm"
+  }`}
               >
                 {msg.text}
               </div>
-              {msg.sender === "bot" && msg.text?.startsWith("To,") && (
-                <div className="flex gap-2 mt-2">
-                  <button
-                    onClick={() => copyToClipboard(msg.text)}
-                    className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold"
-                  >
-                    Copy
-                  </button>
-                  <button
-                    onClick={() => downloadPDF(msg.text)}
-                    className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold"
-                  >
-                    Download PDF
-                  </button>
-                </div>
-              )}
+              {msg.sender === "bot" &&
+                (msg.text?.startsWith("To,") ||
+                  msg.text?.startsWith("सेवा में")) && (
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => copyToClipboard(msg.text)}
+                      className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold"
+                    >
+                      Copy
+                    </button>
+                    <button
+                      onClick={() => generatePDF(msg.text)}
+                      className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold"
+                    >
+                      Download PDF
+                    </button>
+                  </div>
+                )}
               {msg.sender === "bot" && msg.buttons && (
                 <div className="flex gap-2 mt-2 flex-wrap">
                   {msg.buttons.map((btn, i) => (

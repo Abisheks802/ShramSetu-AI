@@ -85,4 +85,4 @@ rules:
   steps:
   - action: complaint_form
   - active_loop: null
-  - action: action_generate_complaint_pdf
+  - action: action_generate_complaint

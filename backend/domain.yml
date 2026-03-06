@@ -4,6 +4,7 @@ intents:
   - check_esic_eligibility
   - provide_salary
   - generate_complaint
+  - provide_complaint_details
   - affirm
   - deny
   - calculate_pf
@@ -19,6 +20,7 @@ entities:
   - years_of_service
 
 slots:
+
   lang:
     type: text
     influence_conversation: true
@@ -30,18 +32,27 @@ slots:
     influence_conversation: false
     mappings:
       - type: from_text
+        conditions:
+          - active_loop: complaint_form
+            requested_slot: employee_name
 
   employer_details:
     type: text
     influence_conversation: false
     mappings:
       - type: from_text
+        conditions:
+          - active_loop: complaint_form
+            requested_slot: employer_details
 
   joining_date:
     type: text
     influence_conversation: false
     mappings:
       - type: from_text
+        conditions:
+          - active_loop: complaint_form
+            requested_slot: joining_date
       
 
   # -------- ESIC form slots --------
@@ -130,15 +141,15 @@ responses:
       text: "क्या आपका नियोक्ता ESIC के तहत पंजीकृत है?"
       buttons:
         - title: 'हाँ ✓'
-          payload: 'हाँ'
+          payload: '/affirm'
         - title: 'नहीं ✗'
-          payload: 'नहीं'
+          payload: '/deny'
     - text: "Is your employer registered under ESIC?"
       buttons:
        - title: 'Yes ✓'
-         payload: 'Yes'
+         payload: '/affirm'
        - title: 'No ✗'
-         payload: 'No'
+         payload: '/deny'
 
   utter_checking:
     - condition:
@@ -178,7 +189,7 @@ responses:
         - type: slot
           name: lang
           value: hi
-      text: "कृपया अपना पूरा नाम लिखें।"
+      text: "कृपया अपना पूरा नाम दर्ज करें।"
     - text: "Please enter your full name."
 
   utter_ask_employer_details:
@@ -186,15 +197,15 @@ responses:
         - type: slot
           name: lang
           value: hi
-      text: "अपने नियोक्ता का नाम और कार्यालय का पूरा पता लिखें।"
-    - text: "Enter your employer name and full address."
+      text: "कृपया अपनी कंपनी का नाम दर्ज करें।"
+    - text: "Enter your company name."
 
   utter_ask_joining_date:
     - condition:
         - type: slot
           name: lang
           value: hi
-      text: "आपकी जॉइनिंग की तारीख क्या है?"
+      text: "कृपया अपनी जॉइनिंग की तारीख बताएं।"
     - text: "What was your date of joining?"
 
 forms:
@@ -217,6 +228,8 @@ forms:
       - employee_name
       - employer_details
       - joining_date
+ 
+
 
 
 actions:
@@ -227,4 +240,4 @@ actions:
   - action_calculate_gratuity
   - action_reset_gratuity_slots
   - action_detect_language
-  - action_generate_complaint_pdf
+  - action_generate_complaint
