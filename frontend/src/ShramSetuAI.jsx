@@ -24,9 +24,10 @@ const ShramSetuAI = () => {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.lang = lang === "hi" ? "hi-IN" : "en-US";
-    recognition.interimResults = false;
-
+    recognition.lang = lang === "hi" ? "hi-IN" : "en-IN";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
     recognition.onstart = () => setIsListening(true);
 
     recognition.onresult = (event) => {
