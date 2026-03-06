@@ -49,26 +49,41 @@ const ShramSetuAI = () => {
     doc.save("Complaint_Letter.pdf");
   };
 
-  const handleVoiceInput = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Browser not supported.");
-      return;
-    }
-    const recognition = new SpeechRecognition();
-    recognition.lang = lang === "hi" ? "hi-IN" : "en-US";
-    recognition.interimResults = false;
-    recognition.onstart = () => setIsListening(true);
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setInput(transcript);
-      handleSend(transcript);
-    };
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
-    recognition.start();
+ const handleVoiceInput = () => {
+
+  // Chrome check for microphone
+  if (!navigator.mediaDevices) {
+    alert("Please use Chrome browser for voice input.");
+    return;
+  }
+
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Browser not supported.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+
+  recognition.lang = lang === "hi" ? "hi-IN" : "en-US";
+  recognition.interimResults = false;
+
+  recognition.onstart = () => setIsListening(true);
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    setInput(transcript);
+    handleSend(transcript);
   };
+
+  recognition.onerror = () => setIsListening(false);
+
+  recognition.onend = () => setIsListening(false);
+
+  recognition.start();
+};
 
   useEffect(() => {
     if (scrollRef.current) {
