@@ -2,6 +2,10 @@ version: "3.1"
 
 rules:
 
+# =========================
+# ESIC RULES
+# =========================
+
 - rule: Start ESIC eligibility form
   steps:
   - intent: check_esic_eligibility
@@ -9,6 +13,7 @@ rules:
   - action: action_reset_esic_slots
   - action: esic_form
   - active_loop: esic_form
+
 
 - rule: Submit ESIC eligibility form
   condition:
@@ -20,7 +25,6 @@ rules:
   - action: action_check_esic_eligibility
 
 
- 
 # =========================
 # PF RULES
 # =========================
@@ -32,6 +36,7 @@ rules:
   - action: action_reset_pf_slot
   - action: pf_form
   - active_loop: pf_form
+
 
 - rule: Submit PF form
   condition:
@@ -54,6 +59,7 @@ rules:
   - action: gratuity_form
   - active_loop: gratuity_form
 
+
 - rule: Submit Gratuity form
   condition:
   - active_loop: gratuity_form
@@ -63,4 +69,21 @@ rules:
   - action: action_calculate_gratuity
 
 
- 
+  # Complaint Form Start
+
+- rule: Start Complaint Form
+  steps:
+  - intent: generate_complaint
+  - action: action_detect_language
+  - action: complaint_form
+  - active_loop: complaint_form
+
+# Complaint Form Submit
+
+- rule: Submit Complaint Form
+  condition:
+  - active_loop: complaint_form
+  steps:
+  - action: complaint_form
+  - active_loop: null
+  - action: action_generate_complaint
