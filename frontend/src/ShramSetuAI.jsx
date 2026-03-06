@@ -60,41 +60,6 @@ const ShramSetuAI = () => {
     doc.save("Complaint_Letter.pdf");
   };
 
- const handleVoiceInput = () => {
-
-  // Chrome check for microphone
-  if (!navigator.mediaDevices) {
-    alert("Please use Chrome browser for voice input.");
-    return;
-  }
-
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if (!SpeechRecognition) {
-    alert("Browser not supported.");
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
-
-  recognition.lang = lang === "hi" ? "hi-IN" : "en-US";
-  recognition.interimResults = false;
-
-  recognition.onstart = () => setIsListening(true);
-
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
-    setInput(transcript);
-    handleSend(transcript);
-  };
-
-  recognition.onerror = () => setIsListening(false);
-
-  recognition.onend = () => setIsListening(false);
-
-  recognition.start();
-};
   const generatePDF = (text) => {
     const element = document.createElement("div");
 
@@ -120,26 +85,36 @@ const ShramSetuAI = () => {
       .save();
   };
   const handleVoiceInput = () => {
+    if (!navigator.mediaDevices) {
+      alert("Please use Chrome browser for voice input.");
+      return;
+    }
+
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
+
     if (!SpeechRecognition) {
       alert("Browser not supported.");
       return;
     }
+
     const recognition = new SpeechRecognition();
-    recognition.lang = lang === "hi" ? "hi-IN" : "en-IN";
-    recognition.interimResults = true;
-    recognition.continuous = false;
-    recognition.maxAlternatives = 1;
-    // 2f3add09d94e418a54cb6c6de4f9484f77fcae23
+
+    recognition.lang = lang === "hi" ? "hi-IN" : "en-US";
+    recognition.interimResults = false;
+
     recognition.onstart = () => setIsListening(true);
+
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       setInput(transcript);
       handleSend(transcript);
     };
+
     recognition.onerror = () => setIsListening(false);
+
     recognition.onend = () => setIsListening(false);
+
     recognition.start();
   };
 
